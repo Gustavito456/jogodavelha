@@ -25,7 +25,6 @@ let stats = {
 let isPlayerTurn = true;
 
 const cells = document.querySelectorAll('.cell');
-const resetButton = document.getElementById('resetButton');
 const winCombinations = [
     [0, 1, 2], [3, 4, 5,], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]
 ];
@@ -34,22 +33,22 @@ cells.forEach(cell => {
     cell.addEventListener('click', handleCellClick);
 });
 
-resetButton.addEventListener('click', resetBoard);
-
 function startGame(symbol) {
     humanSymbol = symbol;
     aiSymbol = symbol === 'X' ? 'O' : 'X';
 
+    const board = document.querySelector('.board');
+    board.style.display = 'grid';
+    board.style.pointerEvents = (symbol === 'X') ? 'auto' : 'none';
+    
+    document.getElementById('symbolModal').style.display = 'none';
     isPlayerTurn = (symbol === 'X');
 
-    document.getElementById('symbolModal').style.display = 'none';
-    document.querySelector('.board').style.display = 'grid';
-
-    isGameActive = true;
-    currentGameMoves = [];
-
-    if (!isPlayerTurn) {
-        setTimeout(makeAIMove, 500); 
+    if (symbol === 'O') {
+      setTimeout(() => {
+        makeAIMove();
+        board.style.pointerEvents = 'auto';
+      }, 500);
     }
 }
 
@@ -62,15 +61,12 @@ function saveAIMemory() {
 }
 
 function handleCellClick(e) {
+    if (!isGameActive || !isPlayerTurn || e.target.textContent !== '') return;
+
     const cell = e.target;
     const index = parseInt(cell.dataset.index);
-
-    if (!isGameActive || !isPlayerTurn || cell.textContent !== '') {
-        return;
-    }
-
-    toggleBoardInteraction(false);
     isPlayerTurn = false;
+    toggleBoardInteraction(false);
 
     makeMove(cell, index, humanSymbol);
 
@@ -80,18 +76,32 @@ function handleCellClick(e) {
         analyzeMistakes();
         updateAIMemory(-1);
         updateStatsDisplay();
-        setTimeout(() => alert('Jogador Venceu!'), 10);
+        setTimeout(() => showGameEndModal('Jogador Venceu! 🎉'), 10);
+        return;
     }
-    else if (isBoardFull()) {
+
+    if (isBoardFull()) {
         stats.draws++;
         updateAIMemory(0);
         updateStatsDisplay();
-        setTimeout(() => alert('Empate!'), 10);
+        setTimeout(() => showGameEndModal('Empate! 🤝'), 10);
+        return;
     }
-    else {
+
+    if (humanSymbol === 'X') {
         setTimeout(() => {
             makeAIMove();
-            toggleBoardInteraction(true);
+            if (isPlayerTurn) {
+                toggleBoardInteraction(true);
+            }
+        }, 500);
+    } else {
+        setTimeout(() => {
+            makeAIMove();
+            if (!checkWin(aiSymbol) && !isBoardFull()) {
+                isPlayerTurn = true;
+                toggleBoardInteraction(true);
+            }
         }, 500);
     }
 }
@@ -128,10 +138,10 @@ function makeAIMove() {
                 stats.draws++;
                 updateAIMemory(0);
                 updateStatsDisplay();
-                setTimeout(() => alert('Empate!'), 10);
+                setTimeout(() => showGameEndModal('Empate!'), 10);
             } else {
                 isGameActive = true;
-                isPlayerTurn = true;
+                isPlayerTurn = (humanSymbol === 'X');
                 document.querySelector('.board').classList.remove('disabled');
             }
             return;
@@ -167,18 +177,24 @@ function makeAIMove() {
         updateAIMemory(1);
         updateStatsDisplay();
         isGameActive = false;
-        setTimeout(() => alert('IA Venceu!'), 10);
+        setTimeout(() => showGameEndModal('IA Venceu!'), 10);
     } else if (isBoardFull()) {
         stats.draws++;
         updateAIMemory(0);
         updateStatsDisplay();
-        setTimeout(() => alert('Empate!'), 10);
+        setTimeout(() => showGameEndModal('Empate!'), 10);
     } else {
         isGameActive = true;
-        isPlayerTurn = true;
-        document.querySelector('.board').classList.remove('disabled');
+        isPlayerTurn = (humanSymbol === 'X');
     }
-}
+
+    if (humanSymbol === 'O' && !checkWin(aiSymbol) && !isBoardFull()) {
+        setTimeout(() => {
+          isPlayerTurn = true;
+          document.querySelector('.board').style.pointerEvents = 'auto';
+        }, 100);
+    }
+}    
 
 function updateAIMemory(result) {
     const multiplier = 2;
@@ -216,19 +232,21 @@ function isBoardFull() {
 
 function resetBoard() {
     cells.forEach(cell => {
-        cell.textContent = '';
-        cell.classList.remove('x', 'o');
+      cell.textContent = '';
+      cell.classList.remove('x', 'o', 'disabled');
     });
 
     isGameActive = true;
-    currentGameMoves = [];
+    isPlayerTurn = (humanSymbol === 'X');
 
-    isPlayerTurn = (humanSymbol === 'X'); 
-
-    document.querySelector('.board').classList.remove('disabled');
+    document.querySelector('.board').style.pointerEvents = 'auto';
+    cells.forEach(cell => cell.style.pointerEvents = 'auto');
 
     if (humanSymbol === 'O') {
-        setTimeout(makeAIMove, 500);
+      setTimeout(() => {
+        makeAIMove();
+        isPlayerTurn = true;
+      }, 500);
     }
 }
 
@@ -286,7 +304,7 @@ function handleGameEnd(winner) {
         stats.iaWins++;
         updateAIMemory(1);
         updateStatsDisplay();
-        setTimeout(() => alert('IA Venceu!'), 10);
+        setTimeout(() => showGameEndModal('IA Venceu!'), 10);
     }
     isGameActive = false;
 }
@@ -317,5 +335,37 @@ function minimax(board, depth, isMaximizing) {
 }
 
 function toggleBoardInteraction(enable) {
-    document.querySelector('.board').classList.toggle('disabled', !enable);
+    const board = document.querySelector('.board');
+    board.style.pointerEvents = enable ? 'all' : 'none';
+    board.classList.toggle('disabled', !enable);
+}
+
+function showGameEndModal(message) {
+    const modal = document.getElementById('gameEndModal');
+    const messageElement = document.getElementById('resultMessage');
+    messageElement.textContent = message;
+    modal.style.display = 'flex';
+}
+
+document.getElementById('nextGame').addEventListener('click', () => {
+    document.getElementById('gameEndModal').style.display = 'none';
+    resetBoard();
+});
+  
+document.getElementById('endGame').addEventListener('click', () => {
+    document.querySelector('.board').style.display = 'none';
+    document.getElementById('gameEndModal').style.display = 'none';
+    showFinalScore();
+});
+  
+function showFinalScore() {
+    const statsDiv = document.getElementById('stats');
+    statsDiv.innerHTML = `
+      <div class="final-score">
+        <h3>Placar Final</h3>
+        <p>Vitórias do Jogador: ${stats.playerWins}</p>
+        <p>Vitórias da IA: ${stats.iaWins}</p>
+        <p>Empates: ${stats.draws}</p>
+        <p>Estados aprendidos: ${Object.keys(aiMemory).length}</p>
+      </div>`;
 }
