@@ -367,5 +367,29 @@ function showFinalScore() {
         <p>Vitórias da IA: ${stats.iaWins}</p>
         <p>Empates: ${stats.draws}</p>
         <p>Estados aprendidos: ${Object.keys(aiMemory).length}</p>
+        <button id="restartGame" style="margin-top: 20px;">Jogar Novamente</button>
       </div>`;
+    
+    document.getElementById('restartGame').addEventListener('click', restartGame);
+}
+
+function restartGame() {
+    stats = {
+        playerWins: 0,
+        iaWins: 0,
+        draws: 0,
+        learnedStates: Object.keys(aiMemory).length
+    };
+
+    document.querySelector('.board').style.display = 'none';
+    document.getElementById('symbolModal').style.display = 'flex';
+    document.getElementById('stats').innerHTML = '';
+
+    cells.forEach(cell => {
+        cell.textContent = '';
+        cell.classList.remove('x', 'o');
+    });
+
+    isGameActive = true;
+    currentGameMoves = [];
 }

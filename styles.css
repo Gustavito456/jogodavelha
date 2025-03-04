@@ -1,88 +1,90 @@
-body{
+body {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     margin: 0;
-    background-color: #f0f0f0;
-    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    font-family: 'Arial', sans-serif;
+    touch-action: manipulation;
 }
 
-.game-container{
-    text-align: center;
+.main-content {
+    width: 100%;
+    max-width: 500px;
+    padding: 25px;
+    box-sizing: border-box;
 }
 
-.board{
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    width: 100%;
+}
+
+h1 {
+    color: #333;
+    font-size: 2.2em;
+    margin: 0;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.board {
     display: none;
-    grid-template-columns: repeat(3,100px);
-    gap: 5px;
-    margin: 20px auto;
-    background-color: #333;
-    padding: 5px;
-    border-radius: 10px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
 }
 
-.cell{
-    width: 100px;
-    height: 100px;
-    background-color: white;
+.cell {
+    aspect-ratio: 1/1;
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 15px;
+    font-size: 2.8em;
+    font-weight: bold;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 40px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.2s ease;
+    user-select: none;
 }
 
-.cell:hover{
-    background-color: #eee;
+.cell:hover {
+    background: #f8f8f8;
+    transform: scale(1.02);
 }
 
-#resetButton{
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-}
-
-#resetButton:hover {
-    background-color: #45a049;
-}
-
-h1{
-    color: #333;
-}
+.cell.x { color: #ff4444; }
+.cell.o { color: #4488ff; }
 
 #stats {
-    margin: 20px;
-    padding: 15px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 320px;
+    background: #fff;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    margin: 20px auto 0;
 }
 
 #stats h3 {
-    margin-top: 0;
-    color: #333;
+    color: #444;
+    font-size: 1.4em;
+    margin: 0 0 15px 0;
+    text-align: center;
 }
 
 #stats p {
-    margin: 5px 0;
     color: #666;
-}
-
-.cell.x {
-    color: #ff4444 !important;
-    text-shadow: 0 0 10px rgba(255, 68, 0.3);
-}
-
-.cell.o {
-    color: #4488ff !important;
-    text-shadow: 0 0 10px rgba(68, 136, 255, 0.3);
+    font-size: 1.1em;
+    margin: 10px 0;
+    text-align: center;
 }
 
 #symbolModal {
@@ -91,7 +93,7 @@ h1{
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.95);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -99,90 +101,172 @@ h1{
 }
 
 .symbol-select {
-    background: white;
-    padding: 2rem;
-    border-radius: 15px;
+    background: #fff;
+    padding: 2.5rem;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 400px;
     text-align: center;
 }
 
+.symbol-select h2 {
+    color: #333;
+    font-size: 1.8em;
+    margin: 0 0 2rem 0;
+}
+
+.symbol-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.symbol-select button {
+    width: 120px;
+    height: 120px;
+    border: none;
+    border-radius: 20px;
+    font-size: 3.5em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#chooseX { background: #ff4444; color: white; }
+#chooseO { background: #4488ff; color: white; }
+
 .symbol-select button:hover {
-    transform: scale(1.1);
-}
-
-#chooseX {
-    background: #ff4444;
-    color: white;
-}
-
-#chooseO {
-    background: #4488ff;
-    color: white;
-}
-
-.cell.disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-  
-.board.disabled {
-    pointer-events: none;
-    opacity: 0.6;
-    transition: all 0.3s;
+    transform: scale(1.08);
+    opacity: 0.9;
 }
 
 #gameEndModal {
-    display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
     justify-content: center;
     align-items: center;
     z-index: 1001;
 }
-  
-#gameEndModal .modal-content {
-    background: white;
+
+.modal-content {
+    background: #fff;
     padding: 2rem;
     border-radius: 15px;
+    width: 85%;
+    max-width: 350px;
     text-align: center;
-    min-width: 300px;
 }
-  
-#gameEndModal h2 {
-    margin: 0 0 1.5rem 0;
+
+#resultMessage {
     color: #333;
+    font-size: 1.6em;
+    margin: 0 0 1.5rem 0;
 }
-  
+
+.modal-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
 .modal-buttons button {
-    padding: 10px 20px;
-    margin: 0 10px;
+    padding: 12px 20px;
+    font-size: 1.1em;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: transform 0.2s;
 }
-  
-#nextGame {
+
+#restartGame {
     background-color: #4CAF50;
     color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 25px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: block;
+    margin: 20px auto 0;
 }
-  
-#endGame {
-    background-color: #ff4444;
-    color: white;
-}
-  
-.modal-buttons button:hover {
+
+#restartGame:hover {
     transform: scale(1.05);
+    background-color: #45a049;
+}
+
+#nextGame { background: #4CAF50; color: white; }
+#endGame { background: #ff4444; color: white; }
+
+@media (max-width: 480px) {
+    .main-content {
+        padding: 15px;
+    }
+
+    .cell {
+        font-size: 2.2em;
+        border-radius: 12px;
+    }
+
+    #stats {
+        max-width: 280px;
+        padding: 15px;
+    }
+
+    #stats h3 { font-size: 1.3em; }
+    #stats p { font-size: 1em; }
+
+    .symbol-select {
+        padding: 1.5rem;
+    }
+
+    .symbol-select button {
+        width: 100px;
+        height: 100px;
+        font-size: 3em;
+    }
+
+    .modal-content {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .cell {
+        font-size: 1.8em;
+    }
+
+    .symbol-select button {
+        width: 80px;
+        height: 80px;
+        font-size: 2.5em;
+    }
+}
+
+button {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    touch-action: manipulation;
+}
+
+button:active {
+    transform: scale(0.95);
 }
 
 .final-score {
     background: #fff;
     padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.2);
-    margin-top: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    margin: 20px auto;
+    max-width: 320px;
+}
+
+.disabled {
+    opacity: 0.6;
+    pointer-events: none;
 }
